@@ -6,6 +6,14 @@
 #include "random_utils.h"
 #include "settings.h"
 
+Turn::Turn(const int& year, const Resources& resources, const Report& report,
+           const float& died_of_hunger) {
+  year_ = year;
+  resources_ = resources;
+  report_ = report;
+  died_of_hunger_ = died_of_hunger;
+}
+
 bool Turn::PlayAndIsGameOver(const int& acres_to_buy, const int& acres_to_sell,
                              const int& acres_to_seed, const int& wheat_to_eat,
                              const int& land_price, const int& wheat_per_acre) {
@@ -16,6 +24,7 @@ bool Turn::PlayAndIsGameOver(const int& acres_to_buy, const int& acres_to_sell,
 
   resources_.BuyLand(acres_to_buy, land_price);
 
+  // wheat calc
   // wheat calc
   resources_.SpendWheatToSeed(acres_to_seed);
 
@@ -70,19 +79,17 @@ void Turn::PrintSmallReport() const {
 
 void Turn::PrintFinalReport() const { report_.PrintFinalReport(); }
 
-int Turn::year() const { return year_; }
-
 float Turn::CalcLandPerMan() const {
   return resources_.land_acres_ / (float)resources_.people_;
 }
+
+int Turn::year() const { return year_; }
 
 float Turn::died_of_hunger() const { return died_of_hunger_; }
 
 Resources Turn::resources() const { return resources_; }
 
 Report Turn::report() const { return report_; }
-
-float Turn::died_of_hunger() const { return died_of_hunger_; }
 
 int Turn::CalcWheatForLand(const int& land_acres, const int& land_price) const {
   return land_acres * land_price;

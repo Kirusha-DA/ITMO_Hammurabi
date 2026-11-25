@@ -7,6 +7,8 @@
 
 class Turn {
  public:
+  Turn() = default;
+  Turn(const int& year, const Resources& resources, const Report& report, const float& died_of_hunger);
   bool PlayAndIsGameOver(const int& acres_to_buy, const int& acres_to_sell,
                          const int& acres_to_seed, const int& wheat_to_eat,
                          const int& land_price, const int& wheat_per_acre);
@@ -14,14 +16,11 @@ class Turn {
   void PrintSmallReport() const;
   void PrintFinalReport() const;
   float CalcLandPerMan() const;
-  float died_of_hunger() const;
   int year() const;
   Resources resources() const;
   Report report() const;
   float died_of_hunger() const;
   int CalcWheatForLand(const int& land_acres, const int& land_price) const;
-  bool Save(const std::string& filename) const;
-  bool Load(const std::string& filename);
 
  private:
   int year_ = 1;

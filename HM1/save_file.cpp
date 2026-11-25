@@ -2,8 +2,9 @@
 
 #include <fstream>
 #include <iostream>
+#include <optional>
 
-bool SaveFile::Save(const std::string& filename) {
+bool SaveFile::Save(const std::string& filename) const {
   std::ofstream out(filename);
   if (!out.is_open()) {
     std::cerr << "Не удалось открыть файл для сохранения.\n";
@@ -28,10 +29,10 @@ bool SaveFile::Save(const std::string& filename) {
   return true;
 }
 
-SaveFile SaveFile::Load(const std::string& filename) {
+std::optional<SaveFile> SaveFile::Load(const std::string& filename) {
   std::ifstream in(filename);
   if (!in.is_open()) {
-    return ;
+    return std::nullopt;
   }
 
   int year = 1;
@@ -44,24 +45,24 @@ SaveFile SaveFile::Load(const std::string& filename) {
   int people_died_of_hunger = 0;
   int people_income = 0;
   bool plague = false;
+  float P = 0;
 
   if (!(in >> year >> wheat >> land_acres >> people >> wheat_per_acre >>
         wheat_eaten_by_rats >> land_price >> people_died_of_hunger >>
-        people_income >> plague)) {
+        people_income >> plague >> P)) {
     std::cerr << "Файл сохранения повреждён.\n";
-    return ;
+    return std::nullopt;
   }
 
-  year_ = year;
-  resources_ = Resources{
+  Resources resources = Resources{
       .wheat_ = wheat,
       .land_acres_ = land_acres,
       .people_ = people,
   };
 
-  report_ = Report{
+  Report report = Report{
       .year_ = year,
-      .resources_ = resources_,
+      .resources_ = resources,
       .wheat_per_acre_ = wheat_per_acre,
       .wheat_eaten_by_rats_ = wheat_eaten_by_rats,
       .land_price_ = land_price,
@@ -70,5 +71,6 @@ SaveFile SaveFile::Load(const std::string& filename) {
       .plague_ = plague,
   };
 
-  return *this;
+  return SaveFile{.turn_ = Turn(year, resources, report, people_died_of_hunger),
+                  .P_ = P};
 }

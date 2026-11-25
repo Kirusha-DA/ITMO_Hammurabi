@@ -1,6 +1,8 @@
 ﻿#define NOMINMAX  // Обязательно до windows.h
 #include <windows.h>
 
+#include <clocale>
+#include <cwctype>
 #include <filesystem>
 #include <iostream>
 #include <random>
@@ -15,7 +17,7 @@ int ReadAcresToBuy(const Turn& state, const int& land_price);
 int ReadAcresToSell(const Turn& state);
 int ReadWheatToFeed(const Turn& state);
 int ReadAcresToSeed(const Turn& state);
-bool ReadIsLoad();
+bool ReadIsLoad(const std::string& filename);
 
 void PrintResults(const int& P, const int& L, const Turn& turn,
                   const bool is_game_over);
@@ -23,8 +25,9 @@ void PrintResults(const int& P, const int& L, const Turn& turn,
 int main() {
   SetConsoleOutputCP(CP_UTF8);
   SetConsoleCP(CP_UTF8);
+  std::setlocale(LC_ALL, "ru_RU.UTF-8");
 
-  const std::string file_name = "save.txt";
+  const std::string filename = "save.txt";
 
   Turn turn = Turn();
 
@@ -33,13 +36,25 @@ int main() {
   bool is_game_over = false;
 
   while (turn.year() <= MAX_TURNS && !is_game_over) {
+    SaveFile save_file = SaveFile{.turn_ = turn, .P_ = P};
+
+    if (turn.year() < 2) {
+      if (bool is_load = ReadIsLoad(filename)) {
+        if (auto loaded_file = SaveFile::Load(filename)) {
+          save_file = *loaded_file;
+        }
+
+        P = save_file.P_;
+        turn = save_file.turn_;
+      }
+    }
+
+    save_file.Save(filename);
     if (turn.year() < 2) {
       turn.PrintSmallReport();
     } else {
       turn.PrintReport();
     }
-
-    bool is_load = ReadIsLoad();
 
     const Resources resources = turn.resources();
 
@@ -72,8 +87,8 @@ int ReadAcresToBuy(const Turn& state, const int& land_price) {
     std::cout << "Количество акров земли к покупке: ";
 
     if (!(std::cin >> acres_to_buy)) {
-      std::cin.clear();
-      std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+      std::wcin.clear();
+      std::wcin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
       std::cout << "Запишите число" << std::endl;
       continue;
     }
@@ -175,24 +190,24 @@ bool ReadIsLoad(const std::string& filename) {
     return false;
   }
 
-  std::string is_load = "Да";
+  std::wstring is_load = L"Да";
 
   while (true) {
     std::cout << "Обнаружено сохранение. Хотите его загрузить? (Да/Нет) "
               << std::endl;
 
-    std::cin >> is_load;
+    std::wcin >> is_load;
 
     // to lower case
     std::transform(is_load.begin(), is_load.end(), is_load.begin(),
-                   [](unsigned char c) { return std::tolower(c); });
+                   [](wchar_t c) { return std::towlower(c); });
 
-    if (is_load != "да" || is_load != "нет") {
-      std::cout << "Допустим вводить только \"Да\" или \"Нет\"";
+    if (is_load != L"да" && is_load != L"нет") {
+      std::cout << "Допустимо вводить только \"Да\" или \"Нет\"\n";
       continue;
     }
 
-    return is_load == "да" ? true : false;
+    return is_load == L"да" ? true : false;
   }
 }
 
